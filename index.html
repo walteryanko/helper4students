@@ -209,40 +209,13 @@
 
     <!-- 3. Lógica JavaScript -->
     <script>
-        // --- Configuração da API ---
-        const apiKey = ""; // DEIXE EM BRANCO.
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+        // --- API URLS (Agora apontam para o nosso próprio backend no Vercel) ---
+        const apiUrlPlano = '/api/gerar-plano';
+        const apiUrlResumo = '/api/resumir';
 
-        // --- Prompts da IA ---
-        const systemPromptResumo = `
-            Você é um assistente acadêmico chamado Helper4students.
-            Sua tarefa é resumir o texto fornecido pelo usuário.
-            O usuário é um estudante, então o resumo deve ser:
-            1.  **Conciso e direto**: Foque nos pontos-chave.
-            2.  **Claro e fácil de entender**.
-            3.  **Bem estruturado**: Use parágrafos ou bullets.
-            Não adicione nenhuma introdução ou conclusão própria, apenas resuma o texto.
-        `;
-        
-        const systemPromptPlano = `
-            Você é um especialista em educação e coach de estudos chamado Helper4students.
-            Sua tarefa é criar um plano de estudos personalizado para um estudante.
-            
-            O estudante fornecerá:
-            1. Matérias
-            2. Tempo disponível
-            3. Meta principal
-
-            Seu plano deve ser:
-            1.  **Realista**: Distribuível no tempo fornecido.
-            2.  **Acionável**: Dividido em tarefas claras (dias, semanas, tópicos).
-            3.  **Priorizado**: Focar nas matérias de forma lógica.
-            4.  **Motivador**: Incluir dicas curtas.
-            
-            Formate a saída de forma clara, usando títulos (ex: **Semana 1:**) e listas.
-            Inclua uma breve seção de "Dicas Personalizadas" no final.
-            NÃO use markdown, apenas texto simples com quebras de linha e asteriscos para ênfase (ex: *Dica*).
-        `;
+        // --- Prompts da IA (Removidos do frontend, eles agora vivem no backend) ---
+        // const systemPromptResumo = ... (Movido para /api/resumir.js)
+        // const systemPromptPlano = ... (Movido para /api/gerar-plano.js)
 
         // --- Função de Backoff (Reutilizável) ---
         async function fetchWithBackoff(url, options, retries = 3, delay = 1000) {
@@ -304,10 +277,12 @@
                 }
                 atualizarUIResumo(true);
                 
+                // O payload agora é mais simples, apenas enviando o texto.
+                // O backend vai adicionar o systemPrompt.
                 const payload = {
-                    contents: [{ parts: [{ text: texto }] }],
-                    systemInstruction: { parts: [{ text: systemPromptResumo }] }
+                    text: texto
                 };
+                
                 const fetchOptions = {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -315,8 +290,12 @@
                 };
 
                 try {
-                    const result = await fetchWithBackoff(apiUrl, fetchOptions);
-                    const resumo = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    // Chama o nosso próprio backend, não mais a API do Google diretamente
+                    const result = await fetchWithBackoff(apiUrlResumo, fetchOptions);
+                    
+                    // A resposta do nosso backend é mais simples
+                    const resumo = result.resumo;
+                    
                     if (resumo) {
                         textoResumido.textContent = resumo.trim();
                         areaResultado.classList.remove('hidden');
@@ -408,17 +387,14 @@
                 
                 atualizarUIPlano(true);
 
-                // Montar o prompt do usuário
-                const userQuery = `
-                    Matérias: ${materias}
-                    Tempo Disponível: ${tempo}
-                    Meta: ${metas}
-                `;
-
+                // O payload agora é mais simples, apenas enviando os dados do formulário.
+                // O backend vai montar o prompt completo.
                 const payload = {
-                    contents: [{ parts: [{ text: userQuery }] }],
-                    systemInstruction: { parts: [{ text: systemPromptPlano }] }
+                    materias: materias,
+                    tempo: tempo,
+                    metas: metas
                 };
+
                 const fetchOptions = {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -426,8 +402,11 @@
                 };
 
                 try {
-                    const result = await fetchWithBackoff(apiUrl, fetchOptions);
-                    const planoGerado = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    // Chama o nosso próprio backend
+                    const result = await fetchWithBackoff(apiUrlPlano, fetchOptions);
+                    
+                    // A resposta do nosso backend é mais simples
+                    const planoGerado = result.plano;
                     
                     if (planoGerado) {
                         // Salvar e exibir o plano
@@ -479,5 +458,6 @@
     </script>
 </body>
 </html>
+
 
 
