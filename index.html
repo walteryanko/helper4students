@@ -4,35 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Helper4Students - Seu Planejador de IA</title>
-    <!-- Carrega o Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Carrega a fonte Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Ícones (para a navegação) -->
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
+        body { font-family: 'Inter', sans-serif; }
         .loader {
             border-top-color: #3498db;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
         /* Oculta páginas inativas */
-        .page {
-            display: none;
-        }
-        .page.active {
-            display: block;
-        }
+        .page { display: none; }
+        .page.active { display: block; }
         /* Estilo para abas ativas */
         .nav-link.active {
             color: #2563EB; /* text-blue-600 */
@@ -43,181 +33,377 @@
 </head>
 <body class="bg-gray-100 text-gray-900">
 
-    <!-- 1. Cabeçalho / Título do App -->
-    <header class="bg-white shadow-md sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex-shrink-0 flex items-center">
-                    <span class="text-2xl font-bold text-blue-600">Helper4Students</span>
-                </div>
-                <!-- Futuro local para 'Login' ou 'Configurações' -->
-                <div class="text-gray-500">
-                    <ion-icon name="person-circle-outline" class="text-3xl"></ion-icon>
-                </div>
+    <div id="global-loader" class="fixed inset-0 bg-white z-[100] flex flex-col justify-center items-center transition-opacity duration-300">
+        <span class="text-2xl font-bold text-blue-600 mb-4">Helper4Students</span>
+        <div class="loader w-12 h-12 border-4 border-t-4 border-gray-200 rounded-full"></div>
+        <p class="mt-4 text-gray-600">A carregar...</p>
+    </div>
+
+    <div id="login-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 z-[90] flex justify-center items-center p-4 hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-8">
+            <h2 class="text-3xl font-bold text-center text-blue-600 mb-6">Helper4Students</h2>
+            <p class="text-center text-gray-600 mb-8">Faça login para aceder ao seu plano de estudos.</p>
+            
+            <button id="btn-login-google" class="w-full flex items-center justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm text-gray-700 font-medium hover:bg-gray-50 transition-all">
+                <ion-icon name="logo-google" class="text-xl mr-3"></ion-icon>
+                Entrar com Google
+            </button>
+
+            <div class="my-6 flex items-center">
+                <div class="flex-grow border-t border-gray-300"></div>
+                <span class="flex-shrink mx-4 text-gray-500 text-sm">OU</span>
+                <div class="flex-grow border-t border-gray-300"></div>
             </div>
-        </div>
-    </header>
 
-    <!-- 2. Conteúdo Principal do App -->
-    <main class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
-
-        <!-- 2.1 Navegação por Abas -->
-        <div class="bg-white rounded-lg shadow-sm mb-6">
-            <nav class="flex justify-around border-b border-gray-200">
-                <button data-page="page-plano" class="nav-link active flex-1 py-4 px-2 text-center font-medium text-gray-600 hover:text-blue-600 transition-all">
-                    Meu Plano
-                </button>
-                <button data-page="page-gerar" class="nav-link flex-1 py-4 px-2 text-center font-medium text-gray-600 hover:text-blue-600 transition-all">
-                    Gerar Plano
-                </button>
-                <button data-page="page-ferramentas" class="nav-link flex-1 py-4 px-2 text-center font-medium text-gray-600 hover:text-blue-600 transition-all">
-                    Ferramentas
-                </button>
-            </nav>
-        </div>
-
-        <!-- 2.2 Página: Meu Plano (Dashboard) -->
-        <section id="page-plano" class="page active">
-            <div class="bg-white p-6 rounded-lg shadow">
-                <h2 class="text-2xl font-bold text-gray-900 mb-4">Meu Plano de Estudos</h2>
-                <div id="plano-container" class="space-y-4">
-                    <!-- O plano gerado pela IA aparecerá aqui -->
-                    <div id="plano-vazio" class="text-center text-gray-500 py-10">
-                        <ion-icon name="document-text-outline" class="text-6xl"></ion-icon>
-                        <p class="mt-2">Você ainda não gerou um plano.</p>
-                        <button id="btn-ir-gerar" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700">
-                            Gerar novo plano
-                        </button>
-                    </div>
-
-                    <div id="plano-conteudo" class="hidden whitespace-pre-wrap p-4 bg-gray-50 rounded-md border border-gray-200">
-                        <!-- Conteúdo do plano vem da IA -->
-                    </div>
-                </div>
-
-                <!-- Botões de Ação (Mockados) -->
-                <div id="plano-acoes" class="mt-6 pt-6 border-t border-gray-200 flex flex-col sm:flex-row gap-4 hidden">
-                    <button disabled class="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-500 bg-gray-100 cursor-not-allowed" title="Requer backend e API do Google">
-                        <ion-icon name="calendar-outline" class="mr-2"></ion-icon>
-                        Sincronizar com Google Calendar
-                    </button>
-                    <button disabled class="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-500 bg-gray-100 cursor-not-allowed" title="Requer backend e Push Notifications">
-                        <ion-icon name="notifications-outline" class="mr-2"></ion-icon>
-                        Ativar Lembretes
-                    </button>
-                </div>
-                 <p id="plano-obs" class="mt-4 text-xs text-gray-400 hidden">*Rastreamento de progresso, Sinc. Google e Lembretes são recursos avançados que requerem um banco de dados e servidor.</p>
-            </div>
-        </section>
-
-        <!-- 2.3 Página: Gerar Plano (Input da IA) -->
-        <section id="page-gerar" class="page">
-            <div class="bg-white p-6 rounded-lg shadow">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">Criar Novo Plano de Estudos</h2>
-                <form id="form-plano" class="space-y-6">
-                    <div>
-                        <label for="materias" class="block text-sm font-medium text-gray-700">
-                            Matérias (separadas por vírgula):
-                        </label>
-                        <div class="mt-1">
-                            <input type="text" id="materias" class="shadow-sm p-3 block w-full sm:text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="Ex: Matemática, História, Redação">
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <label for="tempo" class="block text-sm font-medium text-gray-700">
-                            Tempo disponível:
-                        </label>
-                        <div class="mt-1">
-                             <input type="text" id="tempo" class="shadow-sm p-3 block w-full sm:text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="Ex: 3 horas por dia, 20 horas por semana">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label for="metas" class="block text-sm font-medium text-gray-700">
-                            Meta principal:
-                        </label>
-                        <div class="mt-1">
-                            <textarea id="metas" rows="3" class="shadow-sm p-3 block w-full sm:text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="Ex: Passar no vestibular em 6 meses, Provas finais da faculdade"></textarea>
-                        </div>
-                    </div>
-
-                    <!-- Botão de Ação -->
-                    <div class="mt-6 text-center">
-                        <button id="btn-gerar-plano" type="submit" class="w-full inline-flex items-center justify-center px-10 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all">
-                            <svg id="icon-btn-plano" class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
-                            <span id="texto-btn-plano">Gerar Plano com IA</span>
-                            <div id="loader-plano" class="loader w-5 h-5 border-2 border-t-2 border-gray-200 rounded-full ml-3 hidden"></div>
-                        </button>
-                    </div>
-                    
-                    <!-- Mensagem de Erro -->
-                    <div id="msg-erro-plano" class="mt-4 text-center text-red-600 font-medium hidden"></div>
-
-                </form>
-            </div>
-        </section>
-
-        <!-- 2.4 Página: Ferramentas (Resumidor) -->
-        <section id="page-ferramentas" class="page">
-             <div class="bg-white p-6 rounded-lg shadow">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">Ferramenta: Resumidor de Texto</h2>
-                
-                <!-- Área de Input -->
+            <form id="form-login-email" class="space-y-4">
                 <div>
-                    <label for="texto-original" class="block text-sm font-medium text-gray-700">
-                        Cole o texto para resumir:
-                    </label>
-                    <div class="mt-1">
-                        <textarea id="texto-original" rows="10" class="shadow-sm p-4 block w-full sm:text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="Cole seu artigo, anotações de aula..."></textarea>
-                    </div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="email" required class="shadow-sm p-3 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="voce@email.com">
                 </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">Senha (mín. 6 caracteres)</label>
+                    <input type="password" id="password" required class="shadow-sm p-3 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="••••••••">
+                </div>
+                
+                <div id="login-error-msg" class="text-red-600 text-sm hidden"></div>
 
-                <!-- Botão de Ação -->
-                <div class="mt-6 text-center">
-                    <button id="btn-resumir" type="button" class="inline-flex items-center px-10 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all">
-                        <svg id="icon-btn-resumo" class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                        </svg>
-                        <span id="texto-btn-resumo">Resumir</span>
-                        <div id="loader-resumo" class="loader w-5 h-5 border-2 border-t-2 border-gray-200 rounded-full ml-3 hidden"></div>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button id="btn-login-email" type="button" class="flex-1 inline-flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 font-medium">
+                        Entrar
+                    </button>
+                    <button id="btn-register-email" type="button" class="flex-1 inline-flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 font-medium">
+                        Registar
                     </button>
                 </div>
+            </form>
+        </div>
+    </div>
 
-                <!-- Mensagem de Erro -->
-                <div id="msg-erro-resumo" class="mt-4 text-center text-red-600 font-medium hidden"></div>
 
-                <!-- Área de Output -->
-                <div id="area-resultado" class="mt-10 hidden">
-                    <h3 class="text-xl font-bold text-gray-900 mb-4">Seu Resumo:</h3>
-                    <div id="texto-resumido" class="p-6 bg-gray-50 border border-gray-200 rounded-md shadow-inner whitespace-pre-wrap text-gray-800">
-                        <!-- O resumo gerado pela IA aparecerá aqui -->
+    <div id="app-content" class="hidden">
+        <header class="bg-white shadow-md sticky top-0 z-50">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex-shrink-0 flex items-center">
+                        <span class="text-2xl font-bold text-blue-600">Helper4Students</span>
                     </div>
-                     <div class="mt-6 text-center">
-                        <button id="btn-copiar" type="button" class="inline-flex items-center px-6 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            <ion-icon name="copy-outline" class="mr-2"></ion-icon>
-                            Copiar Resumo
+                    <div class="flex items-center">
+                        <span id="user-email" class="text-gray-600 text-sm mr-4 hidden sm:block"></span>
+                        <button id="btn-logout" class="flex items-center text-gray-500 hover:text-blue-600 transition-all" title="Sair">
+                            <span class="mr-2 hidden sm:block">Sair</span>
+                            <ion-icon name="log-out-outline" class="text-2xl"></ion-icon>
                         </button>
                     </div>
                 </div>
             </div>
-        </section>
+        </header>
 
-    </main>
+        <main class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+            <div class="bg-white rounded-lg shadow-sm mb-6">
+                <nav class="flex justify-around border-b border-gray-200">
+                    <button data-page="page-plano" class="nav-link active flex-1 py-4 px-2 text-center font-medium text-gray-600 hover:text-blue-600 transition-all">
+                        Meu Plano
+                    </button>
+                    <button data-page="page-gerar" class="nav-link flex-1 py-4 px-2 text-center font-medium text-gray-600 hover:text-blue-600 transition-all">
+                        Gerar Plano
+                    </button>
+                    <button data-page="page-ferramentas" class="nav-link flex-1 py-4 px-2 text-center font-medium text-gray-600 hover:text-blue-600 transition-all">
+                        Ferramentas
+                    </button>
+                </nav>
+            </div>
 
-    <!-- 3. Lógica JavaScript -->
-    <script>
-        // --- API URLS (Agora apontam para o nosso próprio backend no Vercel) ---
+            <section id="page-plano" class="page active">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Meu Plano de Estudos</h2>
+                    <div id="plano-container" class="space-y-4">
+                        <div id="plano-vazio" class="text-center text-gray-500 py-10">
+                            <ion-icon name="document-text-outline" class="text-6xl"></ion-icon>
+                            <p class="mt-2">Você ainda não gerou um plano.</p>
+                            <button id="btn-ir-gerar" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700">
+                                Gerar novo plano
+                            </button>
+                        </div>
+                        <div id="plano-conteudo" class="hidden whitespace-pre-wrap p-4 bg-gray-50 rounded-md border border-gray-200">
+                            </div>
+                    </div>
+                    <div id="plano-acoes" class="mt-6 pt-6 border-t border-gray-200 flex flex-col sm:flex-row gap-4 hidden">
+                        <button disabled class="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-500 bg-gray-100 cursor-not-allowed" title="Requer backend e API do Google">
+                            <ion-icon name="calendar-outline" class="mr-2"></ion-icon>
+                            Sincronizar com Google Calendar
+                        </button>
+                        <button disabled class="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-500 bg-gray-100 cursor-not-allowed" title="Requer backend e Push Notifications">
+                            <ion-icon name="notifications-outline" class="mr-2"></ion-icon>
+                            Ativar Lembretes
+                        </button>
+                    </div>
+                    <p id="plano-obs" class="mt-4 text-xs text-gray-400 hidden">*Rastreamento de progresso, Sinc. Google e Lembretes são recursos avançados.</p>
+                </div>
+            </section>
+
+            <section id="page-gerar" class="page">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Criar Novo Plano de Estudos</h2>
+                    <form id="form-plano" class="space-y-6">
+                        <div>
+                            <label for="materias" class="block text-sm font-medium text-gray-700">
+                                Matérias (separadas por vírgula):
+                            </label>
+                            <div class="mt-1">
+                                <input type="text" id="materias" class="shadow-sm p-3 block w-full sm:text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="Ex: Matemática, História, Redação">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="tempo" class="block text-sm font-medium text-gray-700">
+                                Tempo disponível:
+                            </label>
+                            <div class="mt-1">
+                                 <input type="text" id="tempo" class="shadow-sm p-3 block w-full sm:text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="Ex: 3 horas por dia, 20 horas por semana">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="metas" class="block text-sm font-medium text-gray-700">
+                                Meta principal:
+                            </label>
+                            <div class="mt-1">
+                                <textarea id="metas" rows="3" class="shadow-sm p-3 block w-full sm:text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="Ex: Passar no vestibular em 6 meses, Provas finais da faculdade"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 text-center">
+                            <button id="btn-gerar-plano" type="submit" class="w-full inline-flex items-center justify-center px-10 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all">
+                                <svg id="icon-btn-plano" class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                                <span id="texto-btn-plano">Gerar Plano com IA</span>
+                                <div id="loader-plano" class="loader w-5 h-5 border-2 border-t-2 border-gray-200 rounded-full ml-3 hidden"></div>
+                            </button>
+                        </div>
+                        
+                        <div id="msg-erro-plano" class="mt-4 text-center text-red-600 font-medium hidden"></div>
+
+                    </form>
+                </div>
+            </section>
+
+            <section id="page-ferramentas" class="page">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Ferramenta: Resumidor de Texto</h2>
+                    
+                    <div>
+                        <label for="texto-original" class="block text-sm font-medium text-gray-700">
+                            Cole o texto para resumir:
+                        </label>
+                        <div class="mt-1">
+                            <textarea id="texto-original" rows="10" class="shadow-sm p-4 block w-full sm:text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="Cole seu artigo, anotações de aula..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 text-center">
+                        <button id="btn-resumir" type="button" class="inline-flex items-center px-10 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all">
+                            <svg id="icon-btn-resumo" class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                            </svg>
+                            <span id="texto-btn-resumo">Resumir</span>
+                            <div id="loader-resumo" class="loader w-5 h-5 border-2 border-t-2 border-gray-200 rounded-full ml-3 hidden"></div>
+                        </button>
+                    </div>
+
+                    <div id="msg-erro-resumo" class="mt-4 text-center text-red-600 font-medium hidden"></div>
+
+                    <div id="area-resultado" class="mt-10 hidden">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Seu Resumo:</h3>
+                        <div id="texto-resumido" class="p-6 bg-gray-50 border border-gray-200 rounded-md shadow-inner whitespace-pre-wrap text-gray-800">
+                            </div>
+                         <div class="mt-6 text-center">
+                            <button id="btn-copiar" type="button" class="inline-flex items-center px-6 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <ion-icon name="copy-outline" class="mr-2"></ion-icon>
+                                Copiar Resumo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script type="module">
+        // Importar funções do Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged,
+            signInWithPopup,
+            GoogleAuthProvider,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import {
+            getFirestore,
+            doc,
+            getDoc,
+            setDoc,
+            collection
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // --- Configuração do Firebase ---
+        // SEU CÓDIGO FOI INSERIDO AQUI
+        const firebaseConfig = {
+            apiKey: "AIzaSyAKydJHahPTjV0XbQNdWk0KyGcca3wgnWo",
+            authDomain: "helper4students-3d2ff.firebaseapp.com",
+            projectId: "helper4students-3d2ff",
+            storageBucket: "helper4students-3d2ff.firebasestorage.app",
+            messagingSenderId: "116844577885",
+            appId: "1:116844577885:web:52721ea90f666c221ab9b4",
+            measurementId: "G-2FEP9TXXEX"
+        };
+
+        // --- Inicializar Firebase ---
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const googleProvider = new GoogleAuthProvider();
+
+        // --- Variáveis Globais ---
+        let currentUserId = null; // Armazena o ID do usuário logado
+        const colecaoDePlanos = "planos_de_estudo"; // Nome da coleção no Firestore
+
+        // --- URLs do Backend (sem alterações) ---
         const apiUrlPlano = '/api/gerar-plano';
         const apiUrlResumo = '/api/resumir';
 
-        // --- Prompts da IA (Removidos do frontend, eles agora vivem no backend) ---
-        // const systemPromptResumo = ... (Movido para /api/resumir.js)
-        // const systemPromptPlano = ... (Movido para /api/gerar-plano.js)
+        // --- Elementos da UI (Novos e Antigos) ---
+        // ... (todo o resto do script JavaScript permanece o mesmo) ...
+        const globalLoader = document.getElementById('global-loader');
+        const loginModal = document.getElementById('login-modal');
+        const appContent = document.getElementById('app-content');
+        const userEmailDisplay = document.getElementById('user-email');
+        const btnLogout = document.getElementById('btn-logout');
+        
+        // Elementos do Modal de Login
+        const btnLoginGoogle = document.getElementById('btn-login-google');
+        const btnLoginEmail = document.getElementById('btn-login-email');
+        const btnRegisterEmail = document.getElementById('btn-register-email');
+        const inputEmail = document.getElementById('email');
+        const inputPassword = document.getElementById('password');
+        const loginErrorMsg = document.getElementById('login-error-msg');
 
-        // --- Função de Backoff (Reutilizável) ---
+        // --- Lógica Principal de Autenticação ---
+        
+        // Observador que reage a mudanças de login/logout
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // --- Usuário está LOGADO ---
+                currentUserId = user.uid;
+                userEmailDisplay.textContent = user.email;
+                userEmailDisplay.classList.remove('hidden');
+
+                // Esconde login, mostra app
+                loginModal.classList.add('hidden');
+                appContent.classList.remove('hidden');
+
+                // Carrega o plano do usuário do Firestore
+                carregarPlanoDoFirestore();
+
+                // Esconde o loader global (após um pequeno atraso para suavizar)
+                setTimeout(() => globalLoader.classList.add('hidden'), 500);
+
+            } else {
+                // --- Usuário está DESLOGADO ---
+                currentUserId = null;
+                userEmailDisplay.textContent = '';
+                userEmailDisplay.classList.add('hidden');
+
+                // Mostra login, esconde app
+                loginModal.classList.remove('hidden');
+                appContent.classList.add('hidden');
+
+                // Limpa o plano da tela
+                limparPlanoExibido();
+
+                // Esconde o loader global
+                setTimeout(() => globalLoader.classList.add('hidden'), 500);
+            }
+        });
+
+        // --- Funções de Autenticação ---
+        function mostrarErroLogin(mensagem) {
+            loginErrorMsg.textContent = mensagem;
+            loginErrorMsg.classList.remove('hidden');
+        }
+
+        async function handleLoginGoogle() {
+            loginErrorMsg.classList.add('hidden');
+            try {
+                await signInWithPopup(auth, googleProvider);
+                // O onAuthStateChanged vai tratar o resto
+            } catch (error) {
+                console.error("Erro no login com Google:", error);
+                mostrarErroLogin("Não foi possível fazer login com o Google.");
+            }
+        }
+
+        async function handleLoginEmail() {
+            loginErrorMsg.classList.add('hidden');
+            const email = inputEmail.value;
+            const password = inputPassword.value;
+            if (!email || !password) {
+                mostrarErroLogin("Por favor, preencha email e senha.");
+                return;
+            }
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                // O onAuthStateChanged vai tratar o resto
+            } catch (error) {
+                console.error("Erro no login com Email:", error);
+                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+                    mostrarErroLogin("Email ou senha inválidos.");
+                } else {
+                    mostrarErroLogin("Erro ao tentar entrar.");
+                }
+            }
+        }
+
+        async function handleRegisterEmail() {
+            loginErrorMsg.classList.add('hidden');
+            const email = inputEmail.value;
+            const password = inputPassword.value;
+            if (!email || !password) {
+                mostrarErroLogin("Por favor, preencha email e senha.");
+                return;
+            }
+            if (password.length < 6) {
+                mostrarErroLogin("A senha deve ter no mínimo 6 caracteres.");
+                return;
+            }
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                // O onAuthStateChanged vai tratar o resto
+            } catch (error) {
+                console.error("Erro no registro com Email:", error);
+                if (error.code === 'auth/email-already-in-use') {
+                    mostrarErroLogin("Este email já está em uso.");
+                } else {
+                    mostrarErroLogin("Erro ao tentar registar.");
+                }
+            }
+        }
+
+        async function handleLogout() {
+            await signOut(auth);
+            // O onAuthStateChanged vai tratar o resto
+        }
+
+        // Conectar botões de Auth
+        btnLoginGoogle.addEventListener('click', handleLoginGoogle);
+        btnLoginEmail.addEventListener('click', handleLoginEmail);
+        btnRegisterEmail.addEventListener('click', handleRegisterEmail);
+        btnLogout.addEventListener('click', handleLogout);
+
+        // --- Função de Backoff (Sem alterações) ---
         async function fetchWithBackoff(url, options, retries = 3, delay = 1000) {
             try {
                 const response = await fetch(url, options);
@@ -238,27 +424,20 @@
             }
         }
 
-        // --- Lógica de Navegação por Abas ---
+        // --- Lógica de Navegação por Abas (Sem alterações) ---
         const navLinks = document.querySelectorAll('.nav-link');
         const pages = document.querySelectorAll('.page');
-
         function trocarPagina(pageId) {
-            pages.forEach(page => {
-                page.classList.toggle('active', page.id === pageId);
-            });
-            navLinks.forEach(link => {
-                link.classList.toggle('active', link.dataset.page === pageId);
-            });
+            pages.forEach(page => page.classList.toggle('active', page.id === pageId));
+            navLinks.forEach(link => link.classList.toggle('active', link.dataset.page === pageId));
         }
-
-        navLinks.forEach(link => {
-            link.addEventListener('click', () => trocarPagina(link.dataset.page));
-        });
-        
+        navLinks.forEach(link => link.addEventListener('click', () => trocarPagina(link.dataset.page)));
         document.getElementById('btn-ir-gerar').addEventListener('click', () => trocarPagina('page-gerar'));
 
-        // --- Lógica da Ferramenta de Resumo (Movida da v1) ---
+
+        // --- Lógica da Ferramenta de Resumo (Sem alterações na chamada) ---
         (function setupSummarizer() {
+            // ... (todo o código do setupSummarizer permanece o mesmo) ...
             const btnResumir = document.getElementById('btn-resumir');
             const textoOriginal = document.getElementById('texto-original');
             const areaResultado = document.getElementById('area-resultado');
@@ -277,12 +456,7 @@
                 }
                 atualizarUIResumo(true);
                 
-                // O payload agora é mais simples, apenas enviando o texto.
-                // O backend vai adicionar o systemPrompt.
-                const payload = {
-                    text: texto
-                };
-                
+                const payload = { text: texto };
                 const fetchOptions = {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -290,12 +464,8 @@
                 };
 
                 try {
-                    // Chama o nosso próprio backend, não mais a API do Google diretamente
                     const result = await fetchWithBackoff(apiUrlResumo, fetchOptions);
-                    
-                    // A resposta do nosso backend é mais simples
                     const resumo = result.resumo;
-                    
                     if (resumo) {
                         textoResumido.textContent = resumo.trim();
                         areaResultado.classList.remove('hidden');
@@ -351,7 +521,76 @@
             btnCopiar.addEventListener('click', copiarTexto);
         })();
 
-        // --- Lógica do Novo Planejador de IA ---
+
+        // --- Lógica do Planejador (MODIFICADA para usar Firestore) ---
+        
+        // Elementos do Plano (movidos para o escopo global do script)
+        const planoVazio = document.getElementById('plano-vazio');
+        const planoConteudo = document.getElementById('plano-conteudo');
+        const planoAcoes = document.getElementById('plano-acoes');
+        const planoObs = document.getElementById('plano-obs');
+
+        // Função para carregar o plano do Firestore
+        async function carregarPlanoDoFirestore() {
+            if (!currentUserId) return;
+            
+            // Define a referência para o documento do usuário
+            const docRef = doc(db, colecaoDePlanos, currentUserId);
+
+            try {
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    // Documento encontrado, exibir plano
+                    const dados = docSnap.data();
+                    exibirPlano(dados.plano);
+                } else {
+                    // Documento não existe (usuário novo ou sem plano)
+                    limparPlanoExibido();
+                }
+            } catch (error) {
+                console.error("Erro ao carregar plano:", error);
+                exibirErroPlano("Não foi possível carregar seu plano salvo.");
+            }
+        }
+
+        // Função para salvar o plano no Firestore
+        async function salvarPlanoNoFirestore(plano) {
+            if (!currentUserId) return;
+            
+            // Define a referência para o documento do usuário
+            const docRef = doc(db, colecaoDePlanos, currentUserId);
+            
+            try {
+                // Usa setDoc para criar ou sobrescrever o documento
+                await setDoc(docRef, {
+                    plano: plano,
+                    atualizadoEm: new Date() // Adiciona um carimbo de data/hora
+                });
+            } catch (error) {
+                console.error("Erro ao salvar plano:", error);
+                exibirErroPlano("Não foi possível salvar seu novo plano.");
+            }
+        }
+        
+        // Função para exibir o plano na UI
+        function exibirPlano(plano) {
+            planoConteudo.textContent = plano.trim();
+            planoVazio.classList.add('hidden');
+            planoConteudo.classList.remove('hidden');
+            planoAcoes.classList.remove('hidden');
+            planoObs.classList.remove('hidden');
+        }
+
+        // Função para limpar o plano da UI
+        function limparPlanoExibido() {
+            planoConteudo.textContent = '';
+            planoVazio.classList.remove('hidden');
+            planoConteudo.classList.add('hidden');
+            planoAcoes.classList.add('hidden');
+            planoObs.classList.add('hidden');
+        }
+
+        // Lógica do Formulário (Setup do Planejador)
         (function setupPlanner() {
             const formPlano = document.getElementById('form-plano');
             const btnGerarPlano = document.getElementById('btn-gerar-plano');
@@ -359,19 +598,6 @@
             const loader = document.getElementById('loader-plano');
             const textoBtn = document.getElementById('texto-btn-plano');
             const iconBtn = document.getElementById('icon-btn-plano');
-
-            const planoContainer = document.getElementById('plano-container');
-            const planoVazio = document.getElementById('plano-vazio');
-            const planoConteudo = document.getElementById('plano-conteudo');
-            const planoAcoes = document.getElementById('plano-acoes');
-            const planoObs = document.getElementById('plano-obs');
-
-
-            // Carregar plano salvo (simulando DB com localStorage)
-            const planoSalvo = localStorage.getItem('helper4students_plano');
-            if (planoSalvo) {
-                exibirPlano(planoSalvo);
-            }
 
             async function handleGerarPlano(event) {
                 event.preventDefault(); // Impedir envio do formulário
@@ -387,14 +613,7 @@
                 
                 atualizarUIPlano(true);
 
-                // O payload agora é mais simples, apenas enviando os dados do formulário.
-                // O backend vai montar o prompt completo.
-                const payload = {
-                    materias: materias,
-                    tempo: tempo,
-                    metas: metas
-                };
-
+                const payload = { materias, tempo, metas };
                 const fetchOptions = {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -402,17 +621,18 @@
                 };
 
                 try {
-                    // Chama o nosso próprio backend
+                    // 1. Chamar o backend (sem alteração)
                     const result = await fetchWithBackoff(apiUrlPlano, fetchOptions);
-                    
-                    // A resposta do nosso backend é mais simples
                     const planoGerado = result.plano;
                     
                     if (planoGerado) {
-                        // Salvar e exibir o plano
-                        localStorage.setItem('helper4students_plano', planoGerado);
+                        // 2. SALVAR NO FIRESTORE (em vez do localStorage)
+                        await salvarPlanoNoFirestore(planoGerado);
+
+                        // 3. Exibir o plano
                         exibirPlano(planoGerado);
-                        // Mudar para a aba do plano
+                        
+                        // 4. Mudar para a aba do plano
                         trocarPagina('page-plano');
                     } else {
                         exibirErroPlano("A IA não conseguiu gerar um plano. Tente novamente.");
@@ -424,14 +644,6 @@
                 }
             }
             
-            function exibirPlano(plano) {
-                planoConteudo.textContent = plano.trim();
-                planoVazio.classList.add('hidden');
-                planoConteudo.classList.remove('hidden');
-                planoAcoes.classList.remove('hidden');
-                planoObs.classList.remove('hidden');
-            }
-
             function atualizarUIPlano(carregando) {
                 if (carregando) {
                     btnGerarPlano.disabled = true;
@@ -458,6 +670,4 @@
     </script>
 </body>
 </html>
-
-
-
+```eof
