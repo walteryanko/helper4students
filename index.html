@@ -1,14 +1,19 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <!-- ... (head inalterado) ... -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Helper4Students - Seu Planejador de IA</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonte Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Ícones -->
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 
+    <!-- Scripts do Firebase -->
     <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
@@ -29,33 +34,49 @@
             border-bottom-width: 2px;
             border-color: #2563EB;
         }
+        /* (NOVO) Badge "Pro" */
+        .pro-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 99px;
+            background-color: #FBBF24; /* bg-amber-400 */
+            color: #78350F; /* text-amber-900 */
+            margin-left: 8px;
+            line-height: 1;
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900">
 
+    <!-- 1. Overlay de Carregamento Global (inalterado) -->
     <div id="global-loader" class="fixed inset-0 bg-white z-[100] flex flex-col justify-center items-center transition-opacity duration-300">
+        <!-- ... -->
         <span class="text-2xl font-bold text-blue-600 mb-4">Helper4Students</span>
         <div class="loader w-12 h-12 border-4 border-t-4 border-gray-200 rounded-full"></div>
         <p class="mt-4 text-gray-600">A carregar...</p>
     </div>
 
+    <!-- 2. Modal de Login (inalterado) -->
     <div id="login-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 z-[90] flex justify-center items-center p-4 hidden">
+        <!-- ... (todo o conteúdo do modal de login) ... -->
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-8">
             <h2 class="text-3xl font-bold text-center text-blue-600 mb-6">Helper4Students</h2>
             <p class="text-center text-gray-600 mb-8">Faça login para aceder ao seu plano de estudos.</p>
             
+            <!-- Login com Google -->
             <button id="btn-login-google" class="w-full flex items-center justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm text-gray-700 font-medium hover:bg-gray-50 transition-all">
                 <ion-icon name="logo-google" class="text-xl mr-3"></ion-icon>
                 Entrar com Google
             </button>
-
             <div class="my-6 flex items-center">
                 <div class="flex-grow border-t border-gray-300"></div>
                 <span class="flex-shrink mx-4 text-gray-500 text-sm">OU</span>
                 <div class="flex-grow border-t border-gray-300"></div>
             </div>
-
+            <!-- Formulário de Login/Registro com Email -->
             <form id="form-login-email" class="space-y-4">
+                <!-- ... (inputs e botões de login/registo) ... -->
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
                     <input type="email" id="email" required class="shadow-sm p-3 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="voce@email.com">
@@ -79,9 +100,48 @@
         </div>
     </div>
 
+    <!-- (NOVO) 3. Modal de "Upgrade" (Paywall) -->
+    <div id="pro-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 z-[95] flex justify-center items-center p-4 hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-8 text-center relative">
+            <!-- Botão de Fechar -->
+            <button id="btn-fechar-pro-modal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <ion-icon name="close" class="text-3xl"></ion-icon>
+            </button>
+            
+            <ion-icon name="star" class="text-6xl text-amber-400 mb-4"></ion-icon>
+            
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Torne-se Pro!</h2>
+            <p class="text-gray-600 mb-6">
+                Desbloqueie funcionalidades poderosas para levar os seus estudos ao próximo nível.
+            </p>
 
+            <ul class="text-left space-y-3 text-gray-700 mb-8">
+                <li class="flex items-center">
+                    <ion-icon name="checkmark-circle" class="text-green-500 text-xl mr-3"></ion-icon>
+                    Sincronização com Google Calendar
+                </li>
+                <li class="flex items-center">
+                    <ion-icon name="checkmark-circle" class="text-green-500 text-xl mr-3"></ion-icon>
+                    Lembretes e Alertas automáticos
+                </li>
+                <li class="flex items-center">
+                    <ion-icon name="checkmark-circle" class="text-green-500 text-xl mr-3"></ion-icon>
+                    Rastreamento de progresso (em breve)
+                </li>
+            </ul>
+
+            <button id="btn-fazer-upgrade" class="w-full inline-flex justify-center py-3 px-6 border border-transparent rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 font-medium text-lg">
+                Fazer Upgrade Agora
+            </button>
+            <p class="text-xs text-gray-400 mt-4">(Isto irá levá-lo para a página de pagamento)</p>
+        </div>
+    </div>
+
+    <!-- 4. Conteúdo Principal do App (ID alterado para #app-content) -->
     <div id="app-content" class="hidden">
+        <!-- 4.1 Cabeçalho / Título do App (inalterado) -->
         <header class="bg-white shadow-md sticky top-0 z-50">
+            <!-- ... (conteúdo do header, botão logout) ... -->
             <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center h-16">
                     <div class="flex-shrink-0 flex items-center">
@@ -98,8 +158,11 @@
             </div>
         </header>
 
+        <!-- 4.2 Conteúdo Principal (inalterado) -->
         <main class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+            <!-- Navegação por Abas (inalterado) -->
             <div class="bg-white rounded-lg shadow-sm mb-6">
+                <!-- ... (abas 'Meu Plano', 'Gerar Plano', 'Ferramentas') ... -->
                 <nav class="flex justify-around border-b border-gray-200">
                     <button data-page="page-plano" class="nav-link active flex-1 py-4 px-2 text-center font-medium text-gray-600 hover:text-blue-600 transition-all">
                         Meu Plano
@@ -113,10 +176,12 @@
                 </nav>
             </div>
 
+            <!-- Página: Meu Plano (MODIFICADO) -->
             <section id="page-plano" class="page active">
                 <div class="bg-white p-6 rounded-lg shadow">
                     <h2 class="text-2xl font-bold text-gray-900 mb-4">Meu Plano de Estudos</h2>
                     <div id="plano-container" class="space-y-4">
+                        <!-- ... (plano-vazio, plano-conteudo - inalterado) ... -->
                         <div id="plano-vazio" class="text-center text-gray-500 py-10">
                             <ion-icon name="document-text-outline" class="text-6xl"></ion-icon>
                             <p class="mt-2">Você ainda não gerou um plano.</p>
@@ -125,26 +190,38 @@
                             </button>
                         </div>
                         <div id="plano-conteudo" class="hidden whitespace-pre-wrap p-4 bg-gray-50 rounded-md border border-gray-200">
-                            </div>
+                            <!-- Conteúdo do plano vem do Firestore -->
+                        </div>
                     </div>
+
+                    <!-- Botões PRO (MODIFICADO) -->
                     <div id="plano-acoes" class="mt-6 pt-6 border-t border-gray-200 flex flex-col sm:flex-row gap-4 hidden">
-                        <button disabled class="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-500 bg-gray-100 cursor-not-allowed" title="Requer backend e API do Google">
+                        
+                        <!-- Botão Google Calendar (Modificado) -->
+                        <button id="btn-google-calendar" class="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 transition-all">
                             <ion-icon name="calendar-outline" class="mr-2"></ion-icon>
                             Sincronizar com Google Calendar
+                            <span class="pro-badge">PRO</span>
                         </button>
-                        <button disabled class="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-500 bg-gray-100 cursor-not-allowed" title="Requer backend e Push Notifications">
+                        
+                        <!-- Botão Alertas (Modificado) -->
+                        <button id="btn-alertas" class="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 transition-all">
                             <ion-icon name="notifications-outline" class="mr-2"></ion-icon>
                             Ativar Lembretes
+                            <span class="pro-badge">PRO</span>
                         </button>
                     </div>
                     <p id="plano-obs" class="mt-4 text-xs text-gray-400 hidden">*Rastreamento de progresso, Sinc. Google e Lembretes são recursos avançados.</p>
                 </div>
             </section>
 
+            <!-- Página: Gerar Plano (inalterado) -->
             <section id="page-gerar" class="page">
+                <!-- ... (todo o formulário de gerar plano) ... -->
                 <div class="bg-white p-6 rounded-lg shadow">
                     <h2 class="text-2xl font-bold text-gray-900 mb-6">Criar Novo Plano de Estudos</h2>
                     <form id="form-plano" class="space-y-6">
+                        <!-- ... (inputs e botão) ... -->
                         <div>
                             <label for="materias" class="block text-sm font-medium text-gray-700">
                                 Matérias (separadas por vírgula):
@@ -183,15 +260,16 @@
                         </div>
                         
                         <div id="msg-erro-plano" class="mt-4 text-center text-red-600 font-medium hidden"></div>
-
                     </form>
                 </div>
             </section>
 
+            <!-- Página: Ferramentas (inalterado) -->
             <section id="page-ferramentas" class="page">
+                <!-- ... (todo o resumidor de texto) ... -->
                 <div class="bg-white p-6 rounded-lg shadow">
                     <h2 class="text-2xl font-bold text-gray-900 mb-6">Ferramenta: Resumidor de Texto</h2>
-                    
+                    <!-- ... (input, botão, output do resumidor) ... -->
                     <div>
                         <label for="texto-original" class="block text-sm font-medium text-gray-700">
                             Cole o texto para resumir:
@@ -200,7 +278,6 @@
                             <textarea id="texto-original" rows="10" class="shadow-sm p-4 block w-full sm:text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="Cole seu artigo, anotações de aula..."></textarea>
                         </div>
                     </div>
-
                     <div class="mt-6 text-center">
                         <button id="btn-resumir" type="button" class="inline-flex items-center px-10 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all">
                             <svg id="icon-btn-resumo" class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -210,13 +287,12 @@
                             <div id="loader-resumo" class="loader w-5 h-5 border-2 border-t-2 border-gray-200 rounded-full ml-3 hidden"></div>
                         </button>
                     </div>
-
                     <div id="msg-erro-resumo" class="mt-4 text-center text-red-600 font-medium hidden"></div>
-
                     <div id="area-resultado" class="mt-10 hidden">
                         <h3 class="text-xl font-bold text-gray-900 mb-4">Seu Resumo:</h3>
                         <div id="texto-resumido" class="p-6 bg-gray-50 border border-gray-200 rounded-md shadow-inner whitespace-pre-wrap text-gray-800">
-                            </div>
+                            <!-- O resumo gerado pela IA aparecerá aqui -->
+                        </div>
                          <div class="mt-6 text-center">
                             <button id="btn-copiar" type="button" class="inline-flex items-center px-6 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                 <ion-icon name="copy-outline" class="mr-2"></ion-icon>
@@ -229,6 +305,7 @@
         </main>
     </div>
 
+    <!-- 5. Lógica JavaScript (MUITO MODIFICADA) -->
     <script type="module">
         // Importar funções do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -246,11 +323,10 @@
             doc,
             getDoc,
             setDoc,
-            collection
+            serverTimestamp // (NOVO) Para marcar a data de criação
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         // --- Configuração do Firebase ---
-        // SEU CÓDIGO FOI INSERIDO AQUI
         const firebaseConfig = {
             apiKey: "AIzaSyAKydJHahPTjV0XbQNdWk0KyGcca3wgnWo",
             authDomain: "helper4students-3d2ff.firebaseapp.com",
@@ -267,85 +343,111 @@
         const db = getFirestore(app);
         const googleProvider = new GoogleAuthProvider();
 
-        // --- Variáveis Globais ---
-        let currentUserId = null; // Armazena o ID do usuário logado
-        const colecaoDePlanos = "planos_de_estudo"; // Nome da coleção no Firestore
+        // --- Variáveis Globais (MODIFICADO) ---
+        let currentUserId = null; 
+        let currentUserPlan = 'free'; // (NOVO) Armazena o plano do utilizador
+        const colecaoDePlanos = "planos_de_estudo";
+        const colecaoDeUsuarios = "usuarios"; // (NOVO) Nome da coleção de perfis
 
-        // --- URLs do Backend (sem alterações) ---
+        // --- URLs do Backend (inalterado) ---
         const apiUrlPlano = '/api/gerar-plano';
         const apiUrlResumo = '/api/resumir';
 
-        // --- Elementos da UI (Novos e Antigos) ---
-        // ... (todo o resto do script JavaScript permanece o mesmo) ...
+        // --- Elementos da UI (MODIFICADO) ---
         const globalLoader = document.getElementById('global-loader');
         const loginModal = document.getElementById('login-modal');
         const appContent = document.getElementById('app-content');
         const userEmailDisplay = document.getElementById('user-email');
         const btnLogout = document.getElementById('btn-logout');
-        
-        // Elementos do Modal de Login
+        // ... (elementos de login inalterados) ...
         const btnLoginGoogle = document.getElementById('btn-login-google');
         const btnLoginEmail = document.getElementById('btn-login-email');
         const btnRegisterEmail = document.getElementById('btn-register-email');
         const inputEmail = document.getElementById('email');
         const inputPassword = document.getElementById('password');
         const loginErrorMsg = document.getElementById('login-error-msg');
-
-        // --- Lógica Principal de Autenticação ---
         
-        // Observador que reage a mudanças de login/logout
-        onAuthStateChanged(auth, (user) => {
+        // (NOVO) Elementos do Modal Pro
+        const proModal = document.getElementById('pro-modal');
+        const btnFecharProModal = document.getElementById('btn-fechar-pro-modal');
+        const btnFazerUpgrade = document.getElementById('btn-fazer-upgrade');
+        
+        // (NOVO) Botões Pro
+        const btnGoogleCalendar = document.getElementById('btn-google-calendar');
+        const btnAlertas = document.getElementById('btn-alertas');
+
+        // --- Lógica Principal de Autenticação (MODIFICADO) ---
+        
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // --- Usuário está LOGADO ---
+                // --- Utilizador está LOGADO ---
                 currentUserId = user.uid;
                 userEmailDisplay.textContent = user.email;
                 userEmailDisplay.classList.remove('hidden');
 
-                // Esconde login, mostra app
+                // (MODIFICADO) Carrega o PERFIL e DEPOIS o plano
+                await carregarOuCriarPerfil(user);
+                await carregarPlanoDoFirestore();
+
                 loginModal.classList.add('hidden');
                 appContent.classList.remove('hidden');
-
-                // Carrega o plano do usuário do Firestore
-                carregarPlanoDoFirestore();
-
-                // Esconde o loader global (após um pequeno atraso para suavizar)
                 setTimeout(() => globalLoader.classList.add('hidden'), 500);
 
             } else {
-                // --- Usuário está DESLOGADO ---
+                // --- Utilizador está DESLOGADO ---
                 currentUserId = null;
+                currentUserPlan = 'free'; // (NOVO) Resetar o plano ao sair
                 userEmailDisplay.textContent = '';
                 userEmailDisplay.classList.add('hidden');
 
-                // Mostra login, esconde app
                 loginModal.classList.remove('hidden');
                 appContent.classList.add('hidden');
-
-                // Limpa o plano da tela
                 limparPlanoExibido();
-
-                // Esconde o loader global
                 setTimeout(() => globalLoader.classList.add('hidden'), 500);
             }
         });
 
-        // --- Funções de Autenticação ---
+        // --- (NOVO) Função para carregar ou criar o perfil do utilizador ---
+        async function carregarOuCriarPerfil(user) {
+            if (!user) return;
+            const docRef = doc(db, colecaoDeUsuarios, user.uid);
+            try {
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    // Utilizador existe, ler o seu plano
+                    const data = docSnap.data();
+                    currentUserPlan = data.plano || 'free'; // Garantir que 'free' é o padrão
+                } else {
+                    // Utilizador é novo, criar um perfil "free" para ele
+                    const novoPerfil = {
+                        email: user.email,
+                        plano: 'free',
+                        criadoEm: serverTimestamp()
+                    };
+                    await setDoc(docRef, novoPerfil);
+                    currentUserPlan = 'free';
+                }
+            } catch (error) {
+                console.error("Erro ao carregar/criar perfil:", error);
+                currentUserPlan = 'free'; // Segurança: se falhar, assume 'free'
+            }
+        }
+
+        // --- Funções de Autenticação (inalterado) ---
+        // ... (handleLoginGoogle, handleLoginEmail, handleRegisterEmail) ...
         function mostrarErroLogin(mensagem) {
             loginErrorMsg.textContent = mensagem;
             loginErrorMsg.classList.remove('hidden');
         }
-
         async function handleLoginGoogle() {
             loginErrorMsg.classList.add('hidden');
             try {
                 await signInWithPopup(auth, googleProvider);
-                // O onAuthStateChanged vai tratar o resto
             } catch (error) {
                 console.error("Erro no login com Google:", error);
                 mostrarErroLogin("Não foi possível fazer login com o Google.");
             }
         }
-
         async function handleLoginEmail() {
             loginErrorMsg.classList.add('hidden');
             const email = inputEmail.value;
@@ -356,7 +458,6 @@
             }
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                // O onAuthStateChanged vai tratar o resto
             } catch (error) {
                 console.error("Erro no login com Email:", error);
                 if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
@@ -366,7 +467,6 @@
                 }
             }
         }
-
         async function handleRegisterEmail() {
             loginErrorMsg.classList.add('hidden');
             const email = inputEmail.value;
@@ -381,7 +481,6 @@
             }
             try {
                 await createUserWithEmailAndPassword(auth, email, password);
-                // O onAuthStateChanged vai tratar o resto
             } catch (error) {
                 console.error("Erro no registro com Email:", error);
                 if (error.code === 'auth/email-already-in-use') {
@@ -392,8 +491,10 @@
             }
         }
 
+        // (MODIFICADO) Logout agora também reseta o plano
         async function handleLogout() {
             await signOut(auth);
+            currentUserPlan = 'free'; 
             // O onAuthStateChanged vai tratar o resto
         }
 
@@ -403,8 +504,41 @@
         btnRegisterEmail.addEventListener('click', handleRegisterEmail);
         btnLogout.addEventListener('click', handleLogout);
 
-        // --- Função de Backoff (Sem alterações) ---
+        // --- (NOVO) Funções do Modal Pro (Paywall) ---
+        function mostrarProModal() {
+            proModal.classList.remove('hidden');
+        }
+        function fecharProModal() {
+            proModal.classList.add('hidden');
+        }
+        function handleUpgradeClick() {
+            // No futuro, isto redireciona para o Stripe/Mercado Pago
+            alert("A página de pagamento será integrada aqui!");
+            fecharProModal();
+        }
+
+        // Conectar botões do Modal Pro
+        btnFecharProModal.addEventListener('click', fecharProModal);
+        btnFazerUpgrade.addEventListener('click', handleUpgradeClick);
+
+        // (NOVO) Conectar botões das funcionalidades Pro
+        function handleProFeatureClick(featureName) {
+            if (currentUserPlan === 'pro') {
+                // Se for "pro", executa a ação (no futuro)
+                alert(`A funcionalidade PRO "${featureName}" seria executada agora!`);
+            } else {
+                // Se for "free", mostra o paywall
+                mostrarProModal();
+            }
+        }
+        
+        btnGoogleCalendar.addEventListener('click', () => handleProFeatureClick('Google Calendar'));
+        btnAlertas.addEventListener('click', () => handleProFeatureClick('Alertas'));
+
+
+        // --- Função de Backoff (inalterado) ---
         async function fetchWithBackoff(url, options, retries = 3, delay = 1000) {
+            // ... (código inalterado) ...
             try {
                 const response = await fetch(url, options);
                 if (!response.ok) {
@@ -424,7 +558,7 @@
             }
         }
 
-        // --- Lógica de Navegação por Abas (Sem alterações) ---
+        // --- Lógica de Navegação por Abas (inalterado) ---
         const navLinks = document.querySelectorAll('.nav-link');
         const pages = document.querySelectorAll('.page');
         function trocarPagina(pageId) {
@@ -435,9 +569,9 @@
         document.getElementById('btn-ir-gerar').addEventListener('click', () => trocarPagina('page-gerar'));
 
 
-        // --- Lógica da Ferramenta de Resumo (Sem alterações na chamada) ---
+        // --- Lógica da Ferramenta de Resumo (inalterado) ---
         (function setupSummarizer() {
-            // ... (todo o código do setupSummarizer permanece o mesmo) ...
+            // ... (todo o código do resumidor permanece o mesmo) ...
             const btnResumir = document.getElementById('btn-resumir');
             const textoOriginal = document.getElementById('texto-original');
             const areaResultado = document.getElementById('area-resultado');
@@ -447,7 +581,6 @@
             const textoBtn = document.getElementById('texto-btn-resumo');
             const iconBtn = document.getElementById('icon-btn-resumo');
             const btnCopiar = document.getElementById('btn-copiar');
-
             async function gerarResumo() {
                 const texto = textoOriginal.value;
                 if (texto.trim().length === 0) {
@@ -455,14 +588,12 @@
                     return;
                 }
                 atualizarUIResumo(true);
-                
                 const payload = { text: texto };
                 const fetchOptions = {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 };
-
                 try {
                     const result = await fetchWithBackoff(apiUrlResumo, fetchOptions);
                     const resumo = result.resumo;
@@ -478,7 +609,6 @@
                     atualizarUIResumo(false);
                 }
             }
-
             function atualizarUIResumo(carregando) {
                 if (carregando) {
                     btnResumir.disabled = true;
@@ -489,17 +619,15 @@
                     areaResultado.classList.add('hidden');
                 } else {
                     btnResumir.disabled = false;
-                    loader.classList.add('hidden');
+                    loader.classList.remove('hidden');
                     textoBtn.textContent = "Resumir";
                     iconBtn.classList.remove('hidden');
                 }
             }
-
             function exibirErroResumo(mensagem) {
                 msgErro.textContent = mensagem;
                 msgErro.classList.remove('hidden');
             }
-
             function copiarTexto() {
                 const textAreaTemp = document.createElement('textarea');
                 textAreaTemp.value = textoResumido.textContent;
@@ -516,35 +644,27 @@
                 }
                 document.body.removeChild(textAreaTemp);
             }
-
             btnResumir.addEventListener('click', gerarResumo);
             btnCopiar.addEventListener('click', copiarTexto);
         })();
 
 
-        // --- Lógica do Planejador (MODIFICADA para usar Firestore) ---
-        
-        // Elementos do Plano (movidos para o escopo global do script)
+        // --- Lógica do Planejador (Firestore - inalterado) ---
         const planoVazio = document.getElementById('plano-vazio');
         const planoConteudo = document.getElementById('plano-conteudo');
         const planoAcoes = document.getElementById('plano-acoes');
         const planoObs = document.getElementById('plano-obs');
 
-        // Função para carregar o plano do Firestore
         async function carregarPlanoDoFirestore() {
+            // ... (código inalterado) ...
             if (!currentUserId) return;
-            
-            // Define a referência para o documento do usuário
             const docRef = doc(db, colecaoDePlanos, currentUserId);
-
             try {
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
-                    // Documento encontrado, exibir plano
                     const dados = docSnap.data();
                     exibirPlano(dados.plano);
                 } else {
-                    // Documento não existe (usuário novo ou sem plano)
                     limparPlanoExibido();
                 }
             } catch (error) {
@@ -552,37 +672,30 @@
                 exibirErroPlano("Não foi possível carregar seu plano salvo.");
             }
         }
-
-        // Função para salvar o plano no Firestore
         async function salvarPlanoNoFirestore(plano) {
+            // ... (código inalterado) ...
             if (!currentUserId) return;
-            
-            // Define a referência para o documento do usuário
             const docRef = doc(db, colecaoDePlanos, currentUserId);
-            
             try {
-                // Usa setDoc para criar ou sobrescrever o documento
                 await setDoc(docRef, {
                     plano: plano,
-                    atualizadoEm: new Date() // Adiciona um carimbo de data/hora
+                    atualizadoEm: serverTimestamp() // (Modificado para usar serverTimestamp)
                 });
             } catch (error) {
                 console.error("Erro ao salvar plano:", error);
                 exibirErroPlano("Não foi possível salvar seu novo plano.");
             }
         }
-        
-        // Função para exibir o plano na UI
         function exibirPlano(plano) {
+            // ... (código inalterado) ...
             planoConteudo.textContent = plano.trim();
             planoVazio.classList.add('hidden');
             planoConteudo.classList.remove('hidden');
             planoAcoes.classList.remove('hidden');
             planoObs.classList.remove('hidden');
         }
-
-        // Função para limpar o plano da UI
         function limparPlanoExibido() {
+            // ... (código inalterado) ...
             planoConteudo.textContent = '';
             planoVazio.classList.remove('hidden');
             planoConteudo.classList.add('hidden');
@@ -592,6 +705,7 @@
 
         // Lógica do Formulário (Setup do Planejador)
         (function setupPlanner() {
+            // ... (código inalterado, continua a salvar no firestore) ...
             const formPlano = document.getElementById('form-plano');
             const btnGerarPlano = document.getElementById('btn-gerar-plano');
             const msgErro = document.getElementById('msg-erro-plano');
@@ -600,39 +714,27 @@
             const iconBtn = document.getElementById('icon-btn-plano');
 
             async function handleGerarPlano(event) {
-                event.preventDefault(); // Impedir envio do formulário
-
+                event.preventDefault(); 
                 const materias = document.getElementById('materias').value;
                 const tempo = document.getElementById('tempo').value;
                 const metas = document.getElementById('metas').value;
-
                 if (materias.trim().length === 0 || tempo.trim().length === 0 || metas.trim().length === 0) {
                     exibirErroPlano("Por favor, preencha todos os campos.");
                     return;
                 }
-                
                 atualizarUIPlano(true);
-
                 const payload = { materias, tempo, metas };
                 const fetchOptions = {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 };
-
                 try {
-                    // 1. Chamar o backend (sem alteração)
                     const result = await fetchWithBackoff(apiUrlPlano, fetchOptions);
                     const planoGerado = result.plano;
-                    
                     if (planoGerado) {
-                        // 2. SALVAR NO FIRESTORE (em vez do localStorage)
                         await salvarPlanoNoFirestore(planoGerado);
-
-                        // 3. Exibir o plano
                         exibirPlano(planoGerado);
-                        
-                        // 4. Mudar para a aba do plano
                         trocarPagina('page-plano');
                     } else {
                         exibirErroPlano("A IA não conseguiu gerar um plano. Tente novamente.");
@@ -643,7 +745,6 @@
                     atualizarUIPlano(false);
                 }
             }
-            
             function atualizarUIPlano(carregando) {
                 if (carregando) {
                     btnGerarPlano.disabled = true;
@@ -658,16 +759,13 @@
                     iconBtn.classList.remove('hidden');
                 }
             }
-
             function exibirErroPlano(mensagem) {
                 msgErro.textContent = mensagem;
                 msgErro.classList.remove('hidden');
             }
-
             formPlano.addEventListener('submit', handleGerarPlano);
         })();
 
     </script>
 </body>
 </html>
-```eof
